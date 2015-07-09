@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,7 +32,7 @@ namespace CosApiSdk.Api
 
         public string UpdateFile(string bucketName, string folderPath, string fileName, string bizAttribute)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
             var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
             var data = new Dictionary<string, string>();
             data.Add("op", "update");
@@ -50,7 +50,7 @@ namespace CosApiSdk.Api
 
         public string DeleteFile(string bucketName, string folderPath, string fileName)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
             var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
             var data = new Dictionary<string, string>();
             data.Add("op", "delete");
@@ -67,7 +67,7 @@ namespace CosApiSdk.Api
 
         public string GetFileStat(string bucketName, string folderPath, string fileName)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
             var data = new Dictionary<string, string>();
             data.Add("op", "stat");
             var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
