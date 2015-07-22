@@ -103,12 +103,7 @@ namespace QCloud.CosApi.Api
         /// <returns></returns>
         public string UpdateFile(string bucketName, string remotePath, string bizAttribute)
         {
-<<<<<<< HEAD
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
-=======
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
-            var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
->>>>>>> 708e87c3d269059738520fe6bd9adca355554829
             var data = new Dictionary<string, string>();
             data.Add("op", "update");
             data.Add("biz_attr", bizAttribute);
@@ -139,12 +134,7 @@ namespace QCloud.CosApi.Api
         /// <returns></returns>
         public string DeleteFile(string bucketName, string remotePath)
         {
-<<<<<<< HEAD
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
-=======
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
-            var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
->>>>>>> 708e87c3d269059738520fe6bd9adca355554829
             var data = new Dictionary<string, string>();
             data.Add("op", "delete");
             var sign = Sign.SignatureOnce(appId, secretId, secretKey, (remotePath.StartsWith("/") ? "" : "/") + remotePath, bucketName);
@@ -174,11 +164,7 @@ namespace QCloud.CosApi.Api
         /// <returns></returns>
         public string GetFileStat(string bucketName, string remotePath)
         {
-<<<<<<< HEAD
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
-=======
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? HttpUtility.UrlEncode(fileName) : "");
->>>>>>> 708e87c3d269059738520fe6bd9adca355554829
             var data = new Dictionary<string, string>();
             data.Add("op", "stat");
             var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
