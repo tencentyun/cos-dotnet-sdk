@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace CosApiSdk.Common
+namespace QCloud.CosApi.Common
 {
     public class Sign
     {
@@ -35,8 +35,9 @@ namespace CosApiSdk.Common
             return Signature(appId, secretId, secretKey, expired, "", bucketName);
         }
 
-        public static string SignatureOnce(int appId, string secretId, string secretKey, string fileId, string bucketName)
+        public static string SignatureOnce(int appId, string secretId, string secretKey, string remotePath, string bucketName)
         {
+            var fileId = "/" + appId + "/" + bucketName + remotePath;
             return Signature(appId, secretId, secretKey, 0, fileId, bucketName);
         }
     }

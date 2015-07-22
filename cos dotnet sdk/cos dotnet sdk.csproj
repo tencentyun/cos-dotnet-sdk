@@ -8,7 +8,7 @@
     <ProjectGuid>{136234FC-3DE1-4423-B939-B7968E58C168}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CosApiSdk</RootNamespace>
+    <RootNamespace>QCloud.CosApi</RootNamespace>
     <AssemblyName>cos api sdk</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>

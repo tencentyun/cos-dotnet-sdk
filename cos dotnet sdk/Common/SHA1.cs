@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace CosApiSdk.Common
+namespace QCloud.CosApi.Common
 {
     class SHA1
     {
@@ -22,14 +22,14 @@ namespace CosApiSdk.Common
                 arrbytHashValue = osha1.ComputeHash(oFileStream); //计算指定Stream 对象的哈希值
                 oFileStream.Close();
                 //由以连字符分隔的十六进制对构成的String，其中每一对表示value 中对应的元素；例如“F-2C-4A”
-                strHashData = System.BitConverter.ToString(arrbytHashValue);
+                strHashData = BitConverter.ToString(arrbytHashValue);
                 //替换-
                 strHashData = strHashData.Replace("-", "");
                 strResult = strHashData;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                throw ex;
             }
             return strResult;
         }

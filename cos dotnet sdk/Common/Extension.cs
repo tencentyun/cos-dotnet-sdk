@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CosApiSdk.Common
+namespace QCloud.CosApi.Common
 {
     public static class Extension
     {

@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using CosApiSdk.Common;
+using QCloud.CosApi.Common;
 using System.Web;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CosApiSdk.Api
+namespace QCloud.CosApi.Api
 {
     enum FolderPattern { File = 0, Folder, Both };
     class CosCloud
@@ -17,81 +17,199 @@ namespace CosApiSdk.Api
         private int appId;
         private string secretId;
         private string secretKey;
+        private int timeOut;
 
-        public CosCloud(int appId, string secretId, string secretKey)
+        /// <summary>
+        /// CosCloud 构造方法
+        /// </summary>
+        /// <param name="appId">授权appid</param>
+        /// <param name="secretId">授权secret id</param>
+        /// <param name="secretKey">授权secret key</param>
+        /// <param name="timeOut">网络超时,默认60秒</param>
+        public CosCloud(int appId, string secretId, string secretKey, int timeOut = 60)
         {
             this.appId = appId;
             this.secretId = secretId;
             this.secretKey = secretKey;
+            this.timeOut = timeOut * 1000;
         }
 
-        public string UpdateFolder(string bucketName, string folderPath, string bizAttribute)
+        /// <summary>
+        /// 远程路径Encode处理
+        /// </summary>
+        /// <param name="remotePath"></param>
+        /// <returns></returns>
+        private string EncodeRemotePath(string remotePath)
         {
-		    return UpdateFile(bucketName, folderPath, null, bizAttribute);
+            if (remotePath == "/")
+            {
+                return remotePath;
+            }
+		    var endWith = remotePath.EndsWith("/");
+            String[] part = remotePath.Split('/');
+            remotePath = "";
+            foreach(var s in part)
+            {
+        	    if (s != "")
+                {
+        		    if(remotePath != "")
+                    {
+        			    remotePath += "/";
+        		    }
+                    remotePath += HttpUtility.UrlEncode(s);
+                }
+            }
+            remotePath = (remotePath.StartsWith("/") ? "" : "/") + remotePath + (endWith ? "/" : "");
+            return remotePath;
+        }
+
+        /// <summary>
+        /// 标准化远程路径
+        /// </summary>
+        /// <param name="remotePath">要标准化的远程路径</param>
+        /// <returns></returns>
+        private string StandardizationRemotePath(string remotePath)
+        {
+            if (!remotePath.StartsWith("/"))
+            {
+                remotePath = "/" + remotePath;
+            }
+            if (!remotePath.EndsWith("/"))
+            {
+                remotePath += "/";
+            }
+            return remotePath;
+        }
+
+        /// <summary>
+        /// 更新文件夹信息
+        /// </summary>
+        /// <param name="bucketName"> bucket名称</param>
+        /// <param name="remotePath">远程文件夹路径</param>
+        /// <param name="bizAttribute">更新信息</param>
+        /// <returns></returns>
+        public string UpdateFolder(string bucketName, string remotePath, string bizAttribute)
+        {
+            remotePath = StandardizationRemotePath(remotePath);
+		    return UpdateFile(bucketName, remotePath, bizAttribute);
 	    }
 
-        public string UpdateFile(string bucketName, string folderPath, string fileName, string bizAttribute)
+        /// <summary>
+        /// 更新文件信息
+        /// </summary>
+        /// <param name="bucketName"> bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <param name="bizAttribute">更新信息</param>
+        /// <returns></returns>
+        public string UpdateFile(string bucketName, string remotePath, string bizAttribute)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
-            var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
             data.Add("op", "update");
             data.Add("biz_attr", bizAttribute);
-            var sign = Sign.SignatureOnce(appId, secretId, secretKey, fileId, bucketName);
+            var sign = Sign.SignatureOnce(appId, secretId, secretKey, (remotePath.StartsWith("/") ? "" : "/") + remotePath, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header);
+            header.Add("Content-Type", "application/json");
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
-        public string DeleteFolder(string bucketName, string folderPath)
+        /// <summary>
+        /// 删除文件夹
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件夹路径</param>
+        /// <returns></returns>
+        public string DeleteFolder(string bucketName, string remotePath)
         {
-            return DeleteFile(bucketName, folderPath, null);
+            remotePath = StandardizationRemotePath(remotePath);
+            return DeleteFile(bucketName, remotePath);
         }
 
-        public string DeleteFile(string bucketName, string folderPath, string fileName)
+        /// <summary>
+        /// 删除文件
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <returns></returns>
+        public string DeleteFile(string bucketName, string remotePath)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
-            var fileId = "/" + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
             data.Add("op", "delete");
-            var sign = Sign.SignatureOnce(appId, secretId, secretKey, fileId, bucketName);
+            var sign = Sign.SignatureOnce(appId, secretId, secretKey, (remotePath.StartsWith("/") ? "" : "/") + remotePath, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header);
+            header.Add("Content-Type", "application/json");
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
-        public string GetFolderStat(string bucketName, string folderPath)
+        /// <summary>
+        /// 获取文件夹信息
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件夹路径</param>
+        /// <returns></returns>
+        public string GetFolderStat(string bucketName, string remotePath)
         {
-            return GetFileStat(bucketName, folderPath, null);
+            remotePath = StandardizationRemotePath(remotePath);
+            return GetFileStat(bucketName, remotePath);
         }
 
-        public string GetFileStat(string bucketName, string folderPath, string fileName)
+        /// <summary>
+        /// 获取文件信息
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <returns></returns>
+        public string GetFileStat(string bucketName, string remotePath)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (fileName != null ? fileName : "");
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
             data.Add("op", "stat");
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Get, header);
+            return Request.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
-        public string CreateFolder(string bucketName, string folderPath)
+        /// <summary>
+        /// 创建文件夹
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件夹路径</param>
+        /// <returns></returns>
+        public string CreateFolder(string bucketName, string remotePath, string bizAttribute = "")
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath;
+            remotePath = StandardizationRemotePath(remotePath);
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
             data.Add("op", "create");
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            data.Add("biz_attr", bizAttribute);
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header);
+            header.Add("Content-Type", "application/json");
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
-        public string GetFolderList(string bucketName, string folderPath, int num, string offset, int order, FolderPattern pattern, string prefix = null)
+        /// <summary>
+        /// 目录列表,前缀搜索
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件夹路径</param>
+        /// <param name="num">拉取的总数</param>
+        /// <param name="offset">透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来</param>
+        /// <param name="order">默认正序(=0), 填1为反序</param>
+        /// <param name="pattern">拉取模式:只是文件，只是文件夹，全部</param>
+        /// <param name="prefix">读取文件/文件夹前缀</param>
+        /// <returns></returns>
+        public string GetFolderList(string bucketName, string remotePath, int num, string offset, int order, FolderPattern pattern, string prefix = "")
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + (prefix != null ? prefix : "");
+            remotePath = StandardizationRemotePath(remotePath);
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath) + HttpUtility.UrlEncode(prefix);
             var data = new Dictionary<string, string>();
             data.Add("op", "list");
             data.Add("num", num.ToString());
@@ -99,100 +217,142 @@ namespace CosApiSdk.Api
             data.Add("order", order.ToString());
             string[] patternArray = { "eListFileOnly", "eListDirOnly", "eListBoth" };
             data.Add("pattern", patternArray[(int)pattern]);
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Get, header);
+            return Request.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
-        public string UploadFile(string bucketName, string folderPath, string fileName, string uploadFilePath)
+        /// <summary>
+        /// 单个文件上传
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <param name="localPath">本地文件路径</param>
+        /// <returns></returns>
+        public string UploadFile(string bucketName, string remotePath, string localPath)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + HttpUtility.UrlEncode(fileName);
-            var sha1 = SHA1.GetSHA1(uploadFilePath);
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
+            var sha1 = SHA1.GetSHA1(localPath);
             var data = new Dictionary<string, string>();
             data.Add("op", "upload");
             data.Add("sha", sha1);
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header, uploadFilePath);
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath);
         }
 
-        public string SliceUploadFileFirstStep(string bucketName, string folderPath, string fileName, string uploadFilePath, int sliceSize)
+        /// <summary>
+        /// 分片上传第一步
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <param name="localPath">本地文件路径</param>
+        /// <param name="sliceSize">切片大小（字节）</param>
+        /// <returns></returns>
+        public string SliceUploadFileFirstStep(string bucketName, string remotePath, string localPath, int sliceSize)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + HttpUtility.UrlEncode(fileName);
-            var sha1 = SHA1.GetSHA1(uploadFilePath);
-            var fileSize = new FileInfo(uploadFilePath).Length;
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
+            var sha1 = SHA1.GetSHA1(localPath);
+            var fileSize = new FileInfo(localPath).Length;
             var data = new Dictionary<string, string>();
             data.Add("op", "upload_slice");
             data.Add("sha", sha1);
             data.Add("filesize", fileSize.ToString());
             data.Add("slice_size", sliceSize.ToString());
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header);
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
-        public string SliceUploadFileFollowStep(string bucketName, string folderPath, string fileName, string uploadFilePath,
+        /// <summary>
+        /// 分片上传后续步骤
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <param name="localPath">本地文件路径</param>
+        /// <param name="sessionId">分片上传会话ID</param>
+        /// <param name="offset">文件分片偏移量</param>
+        /// <param name="sliceSize">切片大小（字节）</param>
+        /// <returns></returns>
+        public string SliceUploadFileFollowStep(string bucketName, string remotePath, string localPath,
             string sessionId, int offset, int sliceSize)
         {
-            var url = COSAPI_CGI_URL + appId + "/" + bucketName + folderPath + HttpUtility.UrlEncode(fileName);
+            var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
             data.Add("op", "upload_slice");
             data.Add("session", sessionId);
             data.Add("offset", offset.ToString());
-            var expired = DateTime.Now.ToUnixTime() / 1000 + 2592000;
+            var expired = DateTime.Now.ToUnixTime() / 1000 + 60;
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header, uploadFilePath, offset, sliceSize);
+            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath, offset, sliceSize);
         }
 
-        public string SliceUploadFile(string bucketName, string folderPath, string fileName, string uploadFilePath, int sliceSize = 512 * 1024)
+        /// <summary>
+        /// 分片上传
+        /// </summary>
+        /// <param name="bucketName">bucket名称</param>
+        /// <param name="remotePath">远程文件路径</param>
+        /// <param name="localPath">本地文件路径</param>
+        /// <param name="sliceSize">切片大小（字节）,默认为512K</param>
+        /// <returns></returns>
+        public string SliceUploadFile(string bucketName, string remotePath, string localPath, int sliceSize = 512 * 1024)
         {
-            var result = SliceUploadFileFirstStep(bucketName, folderPath, fileName, uploadFilePath, sliceSize);
+            var result = SliceUploadFileFirstStep(bucketName, remotePath, localPath, sliceSize);
             var obj = (JObject)JsonConvert.DeserializeObject(result);
             var code = (int)obj["code"];
-            if(code != 0){
+            if(code != 0)
+            {
                 return result;
             }
             var data = obj["data"];
-            Console.WriteLine(data["access_url"]);
-            if(data["access_url"] != null){
+            if(data["access_url"] != null)
+            {
                 var accessUrl = data["access_url"];
                 Console.WriteLine("命中秒传：" + accessUrl);
                 return result;
             }
-            else{
+            else
+            {
                 var sessionId = data["session"].ToString();
                 sliceSize = (int)data["slice_size"]; 
                 var offset = (int)data["offset"];
                 var retryCount = 0;
-                while(true){
-                    result = SliceUploadFileFollowStep(bucketName, folderPath, fileName, uploadFilePath, sessionId, offset, sliceSize);
+                while(true)
+                {
+                    result = SliceUploadFileFollowStep(bucketName, remotePath, localPath, sessionId, offset, sliceSize);
                     Console.WriteLine(result);
                     obj = (JObject)JsonConvert.DeserializeObject(result);
                     code = (int)obj["code"];
-                    if(code != 0){
+                    if(code != 0)
+                    {
                         //当上传失败后会重试3次
-                        if(retryCount < 3){
+                        if(retryCount < 3)
+                        {
                             retryCount++;
                             Console.WriteLine("重试....");
                         }
-                        else{
+                        else
+                        {
                             return result;
                         }
                     }
-                    else{
+                    else
+                    {
                         data = obj["data"];
-                        if(data["offset"] != null){
+                        if(data["offset"] != null)
+                        {
                             offset = (int)data["offset"] + sliceSize;
                         }
-                        else{
+                        else
+                        {
                             break;
                         }
                     }
