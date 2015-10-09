@@ -201,19 +201,19 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件夹路径</param>
         /// <param name="num">拉取的总数</param>
-        /// <param name="offset">透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来</param>
+        /// <param name="context">透传字段,用于翻页,前端不需理解,需要往前/往后翻页则透传回来</param>
         /// <param name="order">默认正序(=0), 填1为反序</param>
         /// <param name="pattern">拉取模式:只是文件，只是文件夹，全部</param>
         /// <param name="prefix">读取文件/文件夹前缀</param>
         /// <returns></returns>
-        public string GetFolderList(string bucketName, string remotePath, int num, string offset, int order, FolderPattern pattern, string prefix = "")
+        public string GetFolderList(string bucketName, string remotePath, int num, string context, int order, FolderPattern pattern, string prefix = "")
         {
             remotePath = StandardizationRemotePath(remotePath);
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath) + HttpUtility.UrlEncode(prefix);
             var data = new Dictionary<string, string>();
             data.Add("op", "list");
             data.Add("num", num.ToString());
-            data.Add("offset", offset);
+            data.Add("context", context);
             data.Add("order", order.ToString());
             string[] patternArray = { "eListFileOnly", "eListDirOnly", "eListBoth" };
             data.Add("pattern", patternArray[(int)pattern]);
