@@ -15,7 +15,8 @@ namespace QCloud.CosApi.Common
     /// </summary>
     class Request
     {
-        public static string SendRequest(string url, Dictionary<string, string> data, HttpMethod requestMethod,
+        HttpWebRequest request;
+        public string SendRequest(string url, Dictionary<string, string> data, HttpMethod requestMethod,
             Dictionary<string, string> header, int timeOut, string localPath = null, int offset = -1, int sliceSize = 0)
         {
             try
@@ -32,7 +33,7 @@ namespace QCloud.CosApi.Common
                     url += (url.EndsWith("?") ? "&" : "?") + paramStr;
                 }
 
-                var request = (HttpWebRequest)HttpWebRequest.Create(url);
+                request = (HttpWebRequest)HttpWebRequest.Create(url);
                 request.Accept = "*/*";
                 request.KeepAlive = true;
                 request.UserAgent = "qcloud-dotnet-sdk";

@@ -18,7 +18,7 @@ namespace QCloud.CosApi.Api
         private string secretId;
         private string secretKey;
         private int timeOut;
-
+        private Request httpRequest;
         /// <summary>
         /// CosCloud 构造方法
         /// </summary>
@@ -32,6 +32,7 @@ namespace QCloud.CosApi.Api
             this.secretId = secretId;
             this.secretKey = secretKey;
             this.timeOut = timeOut * 1000;
+            this.httpRequest = new Request();
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -141,7 +142,8 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -171,7 +173,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Get, header, timeOut);
+            return httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
         /// <summary>
@@ -192,7 +194,7 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -221,7 +223,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Get, header, timeOut);
+            return httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
         /// <summary>
@@ -242,7 +244,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath);
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath);
         }
 
         /// <summary>
@@ -267,7 +269,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -292,7 +294,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return Request.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath, offset, sliceSize);
+            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath, offset, sliceSize);
         }
 
         /// <summary>
