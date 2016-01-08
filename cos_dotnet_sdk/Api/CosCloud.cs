@@ -283,7 +283,7 @@ namespace QCloud.CosApi.Api
         /// <param name="sliceSize">切片大小（字节）</param>
         /// <returns></returns>
         public string SliceUploadFileFollowStep(string bucketName, string remotePath, string localPath,
-            string sessionId, int offset, int sliceSize)
+            string sessionId, long offset, int sliceSize)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
@@ -325,7 +325,7 @@ namespace QCloud.CosApi.Api
             {
                 var sessionId = data["session"].ToString();
                 sliceSize = (int)data["slice_size"]; 
-                var offset = (int)data["offset"];
+                var offset = (long)data["offset"];
                 var retryCount = 0;
                 while(true)
                 {
@@ -351,7 +351,7 @@ namespace QCloud.CosApi.Api
                         data = obj["data"];
                         if(data["offset"] != null)
                         {
-                            offset = (int)data["offset"] + sliceSize;
+                            offset = (long)data["offset"] + sliceSize;
                         }
                         else
                         {
