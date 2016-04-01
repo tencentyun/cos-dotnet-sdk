@@ -17,7 +17,7 @@ namespace QCloud.CosApi.Common
     {
         HttpWebRequest request;
         public string SendRequest(string url, Dictionary<string, string> data, HttpMethod requestMethod,
-            Dictionary<string, string> header, int timeOut, string localPath = null, int offset = -1, int sliceSize = 0)
+            Dictionary<string, string> header, int timeOut, string localPath = null, long offset = -1, int sliceSize = 0)
         {
             try
             {
