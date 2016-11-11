@@ -16,8 +16,9 @@ namespace QCloud.CosApi.Common
     class Request
     {
         HttpWebRequest request;
-        public string SendRequest(string url, Dictionary<string, string> data, HttpMethod requestMethod,
-            Dictionary<string, string> header, int timeOut, string localPath = null, long offset = -1, int sliceSize = 0)
+  
+        public string SendRequest(string url, ref Dictionary<string, object> data, HttpMethod requestMethod,
+            ref Dictionary<string, string> header, int timeOut, string localPath = null, long offset = -1, int sliceSize = 0)
         {
             try
             {
@@ -36,7 +37,7 @@ namespace QCloud.CosApi.Common
                 request = (HttpWebRequest)HttpWebRequest.Create(url);
                 request.Accept = "*/*";
                 request.KeepAlive = true;
-                request.UserAgent = "qcloud-dotnet-sdk";
+                request.UserAgent = "cos-dotnet-sdk-v3.3";
                 request.Timeout = timeOut;
                 foreach (var key in header.Keys)
                 {
@@ -106,6 +107,7 @@ namespace QCloud.CosApi.Common
                                 bytesRead = fileStream.Read(buffer, 0, buffer.Length);
                                 memStream.Write(buffer, 0, bytesRead);
                             }
+                            fileStream.Close();
                         }
                         memStream.Write(endBoundary, 0, endBoundary.Length);
                     }

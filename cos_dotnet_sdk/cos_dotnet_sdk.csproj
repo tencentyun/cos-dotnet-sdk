@@ -50,11 +50,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\CosCloud.cs" />
+    <Compile Include="Common\CosParameters.cs" />
+    <Compile Include="Common\HttpUtils.cs" />
     <Compile Include="Common\Request.cs" />
     <Compile Include="Common\SHA1.cs" />
     <Compile Include="Common\Sign.cs" />
     <Compile Include="Common\Extension.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Demo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

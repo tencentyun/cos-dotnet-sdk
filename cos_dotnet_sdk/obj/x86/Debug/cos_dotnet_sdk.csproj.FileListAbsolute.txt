@@ -1,0 +1,7 @@
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\bin\Debug\cos api sdk.exe.config
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\bin\Debug\cos api sdk.exe
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\bin\Debug\cos api sdk.pdb
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\bin\Debug\Newtonsoft.Json.dll
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\obj\x86\Debug\cos_dotnet_sdk.csprojResolveAssemblyReference.cache
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\obj\x86\Debug\cos api sdk.exe
+D:\code\file_cloud_proj\branches\sdk3.3\cos-dotnet-sdk\cos_dotnet_sdk\obj\x86\Debug\cos api sdk.pdb

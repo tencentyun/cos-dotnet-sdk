@@ -8,7 +8,7 @@ namespace QCloud.CosApi.Common
 {
     public class Sign
     {
-        private static string Signature(int appId, string secretId, string secretKey, long expired, string fileId, string bucketName)
+        public static string Signature(int appId, string secretId, string secretKey, long expired, string fileId, string bucketName)
         {
             if (secretId == "" || secretKey == "")
             {
@@ -17,7 +17,7 @@ namespace QCloud.CosApi.Common
             var now = DateTime.Now.ToUnixTime() / 1000;
             var rand = new Random();
             var rdm = rand.Next(Int32.MaxValue);
-            var plainText = "a=" + appId + "&k=" + secretId + "&e=" + expired + "&t=" + now + "&r=" + rdm + "&f=" + fileId + "&b=" + bucketName;
+            var plainText = "a=" + appId + "&k=" + secretId + "&e=" + expired + "&t=" + now + "&r=" + rdm + "&f=" + fileId + "&b=" + bucketName ;
 
             using (HMACSHA1 mac = new HMACSHA1(Encoding.UTF8.GetBytes(secretKey)))
             {
